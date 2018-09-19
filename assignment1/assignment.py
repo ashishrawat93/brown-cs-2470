@@ -21,7 +21,7 @@ class Model:
     """
     def __init__(self, train_images, train_labels):
         input_size, num_classes, batchSz, learning_rate = 784, 10, 1, 0.5
-        self.train_images = train_images/255
+        self.train_images = train_images
         self.train_labels = train_labels
         self.learn_rate = 0.5
         self.num_classes = num_classes
@@ -156,10 +156,10 @@ def main():
     train_images, train_labels, test_images, test_labels = load_data()
 
     # normalize data
+    train_images = train_images / 255
     test_images = test_images / 255
 
     model = Model(train_images, train_labels)
-
     for _ in range(10000):
         model.run()
 

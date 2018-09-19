@@ -1,0 +1,21 @@
+ACCURACY:
+The Model trains on 10,000 random images from the 60,000 training images. 
+The Model achieves an test accuracy between 0.78 and 0.85, which amounts to an average test accuracy of 0.804 averages across 10 runs.
+
+BUGS:
+There are no appearent bugs in the Model.
+
+TESTING:
+Instantiate a model object by calling the Model() class initializer and passing in two arguments, namely training data and training labels as follows
+        model = Model(train_images, train_labels)
+
+where train_images is a 2D numpy array, where each row represents image pixel values
+where train_labels is a numpy vector, denoting the correct label of ith train_images
+
+To train the model, call the model's run() method, which takes no argument. Run executes just one step of SGD on a randomly sampled training sample 
+Call run 10,000 times to ensure the model is trained sufficiently.
+
+To test the accuracy of the model call the accuracy_function() method, which takes in two arguemnts, namely test data and test labels.
+
+DATA:
+The model does not normalize data, so any data passed to the model should already be normalized.
