@@ -1,5 +1,6 @@
 import os
 import tensorflow as tf
+from tensorflow.examples.tutorials.mnist import input_data
 # Killing optional CPU driver warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
@@ -27,6 +28,9 @@ class Model:
         self.loss = self.loss_function()
         self.optimize = self.optimizer()
         self.accuracy = self.accuracy_function()
+        # self.learn_rate = 0.01
+        # self.batch_size = 100
+
 
     def forward_pass(self):
         """
@@ -64,16 +68,45 @@ class Model:
 def main():
 
     # TODO: import MNIST data
+    data = input_data.read_data_sets("MNIST_data/", one_hot=True)
+
 
     # TODO: Set-up placeholders for inputs and outputs
+    batch_size = 200
+    input_image = tf.placeholder(tf.float32, [batch_size, 784])
+    labels = tf.placeholder(tf.float32, [batch_size, 10])
+
+
 
     # TODO: initialize model and tensorflow variables
 
+    weights = tf.Variable(tf.random_normal([784, 10], stddev=0.1))
+    bias = tf.Variable(tf.random_normal([10], stddev=0.1))
+
+    probs = tf.nn.softmax(tf.matmul(input_image, weights) + bias)
+    loss = tf.reduce_mean(-tf.reduce_sum(labels * tf.log(probs), reduction_indices=[1]))
+
+
     # TODO: Set-up the training step, for as many of the 60,000 examples as you'd like
     #     where the batch size is greater than 1
+    train = tf.train.GradientDescentOptimizer(0.5).minimize(loss)
+    correct_predictions = tf.equal(tf.argmax(probs,1), tf.argmax(labels,1))
+    accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
 
     # TODO: run the model on test data and print the accuracy
+    sess = tf.Session()
+    sess.run(tf.global_variables_initializer())
+    for i in range(40000):
+        images, correct_labels = data.train.next_batch(batch_size)
+        sess.run(train, feed_dict={input_image:images, labels:correct_labels})
 
+
+    tot_acc = 0
+    for i in range(1000):
+        images, correct_labels = data.train.next_batch(batch_size)
+        tot_acc = sess.run(accuracy, feed_dict={input_image:images, labels:correct_labels})
+
+    print("Test Accuracy: ", tot_acc/1000)
     return
 
 
