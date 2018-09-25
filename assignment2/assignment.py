@@ -89,29 +89,26 @@ def main():
     label = tf.placeholder(tf.float32, shape=[None, 10])
 
     model = Model(image, label)
-
     train = model.optimize
-
+    accuracy = model.accuracy_function()
     # correct_prediction = tf.equal(tf.argmax(model.prediction, 1),
     #                               tf.argmax(model.label, 1))
-    #
     # accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-    #
-    # with tf.Session() as sess:
-    #     sess.run(tf.global_variables_initializer())
-    #     for b in range(2000):
-    #         inp, lab = data.train.next_batch(batch_size=100)
-    #
-    #         sess.run(train,feed_dict={model.image:inp, model.label:lab})
-    #         acc = sess.run(accuracy,feed_dict={model.image:inp, model.label:lab})
-    #         print("\nAccuracy for batch \'",b+1, "\' is :",acc )
-    #
-    #     acc = 0
-    #     for _ in range(2000):
-    #         timg, tlab = data.test.next_batch(batch_size=100)
-    #         acc += sess.run(accuracy, feed_dict={model.image:timg, model.label:tlab})
-    #
-    #     print("\nTest Accuracy: ", acc/2000)
+
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
+        for b in range(2000):
+            train_images, train_labels = data.train.next_batch(batch_size=100)
+            sess.run(train,feed_dict={model.image:train_images, model.label:train_labels})
+            # acc = sess.run(accuracy,feed_dict={model.image:train_images, model.label:train_labels})
+            # print("\nAccuracy for batch \'",b+1, "\' is :",acc )
+
+        acc = 0
+        for _ in range(2000):
+            test_images, test_labels = data.test.next_batch(batch_size=100)
+            acc += sess.run(accuracy, feed_dict={model.image:test_images, model.label:test_labels})
+
+        print("\nTest Accuracy: ", acc/2000)
 
 if __name__ == '__main__':
     main()
