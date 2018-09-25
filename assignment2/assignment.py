@@ -1,6 +1,6 @@
 import os
 import tensorflow as tf
-import numpy as np
+
 from tensorflow.examples.tutorials.mnist import input_data
 # Killing optional CPU driver warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -23,14 +23,14 @@ class Model:
         loss: the model's loss produced by computing self.loss_function()
         accuracy: the model's prediction accuracy – no need to modify this
         """
-        self.image = image
+        self.image =  image
         self.label = label
+
         self.prediction = self.forward_pass()
         self.loss = self.loss_function()
         self.optimize = self.optimizer()
         self.accuracy = self.accuracy_function()
-        # self.learn_rate = 0.01
-        # self.batch_size = 100
+
 
 
     def forward_pass(self):
@@ -39,8 +39,21 @@ class Model:
 
         :return: the predicted label as a tensor
         """
-        # TODO replace pass with forward_pass method
-        pass
+
+
+
+        weights1 = tf.Variable(tf.random_normal([784, 100], stddev=0.1))
+        bias1 = tf.Variable(tf.random_normal([100], stddev=0.1))
+
+        weights2 = tf.Variable(tf.random_normal([100, 10], stddev=0.1))
+        bias2 = tf.Variable(tf.random_normal([10], stddev=0.1))
+
+        logits_1 = tf.add(tf.matmul(self.image, weights1), bias1)
+        activation_1 = tf.nn.relu(logits_1)
+
+        logits_2 = tf.add(tf.matmul(activation_1, weights2), bias2)
+        activation_2 = tf.nn.softmax(logits_2)
+        return activation_2
 
     def loss_function(self):
         """
@@ -49,8 +62,9 @@ class Model:
         :return: the loss of the model as a tensor
         """
         # TODO replace pass with loss_function method
-        pass
-
+        loss = tf.reduce_mean(-tf.reduce_sum(self.label * tf.log(self.prediction), reduction_indices=[1]))
+        # loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=self.prediction, labels=self.label))
+        return loss
     def optimizer(self):
         """
         Optimizes the model loss
@@ -58,7 +72,8 @@ class Model:
         :return: the optimizer as a tensor
         """
         # TODO replace pass with optimizer method
-        pass
+        train = tf.train.GradientDescentOptimizer(learning_rate=0.5).minimize(self.loss)
+        return train
 
     def accuracy_function(self):
         correct_prediction = tf.equal(tf.argmax(self.prediction, 1),
@@ -68,72 +83,35 @@ class Model:
 
 def main():
 
-
     data = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
-    tf.set_random_seed(5)
-    batch_size = 100
-    input_image = tf.placeholder(tf.float32, [batch_size, 784])
-    y = tf.placeholder(tf.int64, [batch_size, 10])
+    image =  tf.placeholder(tf.float32, shape=[None, 784])
+    label = tf.placeholder(tf.float32, shape=[None, 10])
 
+    model = Model(image, label)
 
+    train = model.optimize
 
-
-
-    weights = tf.Variable(tf.random_normal([784, 400]))
-    bias = tf.Variable(tf.random_normal([400]))
-    # bias = tf.Variable(tf.zeros([500]))
-
-    weights2 = tf.Variable(tf.random_normal([400,10]))
-    bias2 = tf.Variable(tf.random_normal([10]))
-    # bias2 = tf.Variable(tf.zeros([10]))
-
-
-
-    logits_1 = tf.add( tf.matmul(input_image, weights), bias)
-    activation_1 = tf.nn.sigmoid(logits_1)
-
-    logits_ = tf.add(tf.matmul(activation_1, weights2), bias2)
-    predction = tf.argmax(tf.nn.sigmoid(logits_), axis=1)
-
-    loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits_, labels=y))
-    train = tf.train.GradientDescentOptimizer(learning_rate=0.05).minimize(loss)
-
-    correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(logits_,1))
-    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-
-    with tf.Session() as sess:
-        # sess = tf.Session()
-        sess.run(tf.global_variables_initializer())
-        sess.run(tf.local_variables_initializer())
-
-        for i in range(2000):
-
-            images, correct_labels = data.train.next_batch(batch_size)
-            images =  images/255
-            # print(correct_labels.shape, correct_labels[0])
-            # exit(0)
-            sess.run(train, feed_dict={input_image:images, y:correct_labels})
-
-        tot_acc = 0
-        for i in range(2000):
-            images, correct_labels = data.test.next_batch(batch_size)
-            images = images/255
-            # print(images.shape, labels.shape)
-            # break
-            # intt = sess.run(accuracy, feed_dict={input_image:images, y:correct_labels})
-            # tot_acc +=intt
-            #
-            # print("\nTest Accuracy: ", intt, "\n___________________\n")
-
-            print(sess.run(predction))
-            sess.run(logits_)
-
-        print("\nFINAL Test Accuracy: ", tot_acc/2000, "\n_________________\n")
-
-
-    return
-
+    # correct_prediction = tf.equal(tf.argmax(model.prediction, 1),
+    #                               tf.argmax(model.label, 1))
+    #
+    # accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    #
+    # with tf.Session() as sess:
+    #     sess.run(tf.global_variables_initializer())
+    #     for b in range(2000):
+    #         inp, lab = data.train.next_batch(batch_size=100)
+    #
+    #         sess.run(train,feed_dict={model.image:inp, model.label:lab})
+    #         acc = sess.run(accuracy,feed_dict={model.image:inp, model.label:lab})
+    #         print("\nAccuracy for batch \'",b+1, "\' is :",acc )
+    #
+    #     acc = 0
+    #     for _ in range(2000):
+    #         timg, tlab = data.test.next_batch(batch_size=100)
+    #         acc += sess.run(accuracy, feed_dict={model.image:timg, model.label:tlab})
+    #
+    #     print("\nTest Accuracy: ", acc/2000)
 
 if __name__ == '__main__':
     main()
