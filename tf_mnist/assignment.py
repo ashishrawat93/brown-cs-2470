@@ -40,8 +40,6 @@ class Model:
         :return: the predicted label as a tensor
         """
 
-
-
         weights1 = tf.Variable(tf.random_normal([784, 100], stddev=0.1))
         bias1 = tf.Variable(tf.random_normal([100], stddev=0.1))
 
@@ -52,8 +50,9 @@ class Model:
         activation_1 = tf.nn.relu(logits_1)
 
         logits_2 = tf.add(tf.matmul(activation_1, weights2), bias2)
-        activation_2 = tf.nn.softmax(logits_2)
-        return activation_2
+        prob = tf.nn.softmax(logits_2)
+
+        return prob
 
     def loss_function(self):
         """
@@ -61,10 +60,10 @@ class Model:
 
         :return: the loss of the model as a tensor
         """
-        # TODO replace pass with loss_function method
         loss = tf.reduce_mean(-tf.reduce_sum(self.label * tf.log(self.prediction), reduction_indices=[1]))
-        # loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=self.prediction, labels=self.label))
         return loss
+
+
     def optimizer(self):
         """
         Optimizes the model loss
@@ -90,7 +89,7 @@ def main():
 
     model = Model(image, label)
     train = model.optimize
-    accuracy = model.accuracy_function()
+    accuracy = model.accuracy
     # correct_prediction = tf.equal(tf.argmax(model.prediction, 1),
     #                               tf.argmax(model.label, 1))
     # accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
@@ -100,8 +99,7 @@ def main():
         for b in range(2000):
             train_images, train_labels = data.train.next_batch(batch_size=100)
             sess.run(train,feed_dict={model.image:train_images, model.label:train_labels})
-            # acc = sess.run(accuracy,feed_dict={model.image:train_images, model.label:train_labels})
-            # print("\nAccuracy for batch \'",b+1, "\' is :",acc )
+
 
         acc = 0
         for _ in range(2000):

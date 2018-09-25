@@ -1,0 +1,22 @@
+Bugs:
+
+    No bugs
+
+Model Parameters:
+
+    Learning rate of 0.5 was ideal for the network as the network needed
+    to quickly reach the optimal weight,and 0.5 did not lead to over-fitting.
+
+    Standard deviation of 0.1 as input to tf.random_normal, the model performed
+    better with higher values of initialized weights and biases, therefore these
+    values were not multiplied by a small constant to make them smaller.
+
+    Batch Size of 100 samples was used.
+
+    A total of 2000 batches were used, and batches were sampled at random
+    from the entire training data.
+
+    The output of the hidden layer was squashed using RELU activation function
+    before passing it to the output layer.
+
+
