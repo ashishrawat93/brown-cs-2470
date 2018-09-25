@@ -1,5 +1,6 @@
 import os
 import tensorflow as tf
+import numpy as np
 from tensorflow.examples.tutorials.mnist import input_data
 # Killing optional CPU driver warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -67,46 +68,70 @@ class Model:
 
 def main():
 
-    # TODO: import MNIST data
+
     data = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
-
-    # TODO: Set-up placeholders for inputs and outputs
-    batch_size = 200
+    tf.set_random_seed(5)
+    batch_size = 100
     input_image = tf.placeholder(tf.float32, [batch_size, 784])
-    labels = tf.placeholder(tf.float32, [batch_size, 10])
+    y = tf.placeholder(tf.int64, [batch_size, 10])
 
 
 
-    # TODO: initialize model and tensorflow variables
-
-    weights = tf.Variable(tf.random_normal([784, 10], stddev=0.1))
-    bias = tf.Variable(tf.random_normal([10], stddev=0.1))
-
-    probs = tf.nn.softmax(tf.matmul(input_image, weights) + bias)
-    loss = tf.reduce_mean(-tf.reduce_sum(labels * tf.log(probs), reduction_indices=[1]))
 
 
-    # TODO: Set-up the training step, for as many of the 60,000 examples as you'd like
-    #     where the batch size is greater than 1
-    train = tf.train.GradientDescentOptimizer(0.5).minimize(loss)
-    correct_predictions = tf.equal(tf.argmax(probs,1), tf.argmax(labels,1))
-    accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
+    weights = tf.Variable(tf.random_normal([784, 400]))
+    bias = tf.Variable(tf.random_normal([400]))
+    # bias = tf.Variable(tf.zeros([500]))
 
-    # TODO: run the model on test data and print the accuracy
-    sess = tf.Session()
-    sess.run(tf.global_variables_initializer())
-    for i in range(40000):
-        images, correct_labels = data.train.next_batch(batch_size)
-        sess.run(train, feed_dict={input_image:images, labels:correct_labels})
+    weights2 = tf.Variable(tf.random_normal([400,10]))
+    bias2 = tf.Variable(tf.random_normal([10]))
+    # bias2 = tf.Variable(tf.zeros([10]))
 
 
-    tot_acc = 0
-    for i in range(1000):
-        images, correct_labels = data.train.next_batch(batch_size)
-        tot_acc = sess.run(accuracy, feed_dict={input_image:images, labels:correct_labels})
 
-    print("Test Accuracy: ", tot_acc/1000)
+    logits_1 = tf.add( tf.matmul(input_image, weights), bias)
+    activation_1 = tf.nn.sigmoid(logits_1)
+
+    logits_ = tf.add(tf.matmul(activation_1, weights2), bias2)
+    predction = tf.argmax(tf.nn.sigmoid(logits_), axis=1)
+
+    loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits_, labels=y))
+    train = tf.train.GradientDescentOptimizer(learning_rate=0.05).minimize(loss)
+
+    correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(logits_,1))
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
+    with tf.Session() as sess:
+        # sess = tf.Session()
+        sess.run(tf.global_variables_initializer())
+        sess.run(tf.local_variables_initializer())
+
+        for i in range(2000):
+
+            images, correct_labels = data.train.next_batch(batch_size)
+            images =  images/255
+            # print(correct_labels.shape, correct_labels[0])
+            # exit(0)
+            sess.run(train, feed_dict={input_image:images, y:correct_labels})
+
+        tot_acc = 0
+        for i in range(2000):
+            images, correct_labels = data.test.next_batch(batch_size)
+            images = images/255
+            # print(images.shape, labels.shape)
+            # break
+            # intt = sess.run(accuracy, feed_dict={input_image:images, y:correct_labels})
+            # tot_acc +=intt
+            #
+            # print("\nTest Accuracy: ", intt, "\n___________________\n")
+
+            print(sess.run(predction))
+            sess.run(logits_)
+
+        print("\nFINAL Test Accuracy: ", tot_acc/2000, "\n_________________\n")
+
+
     return
 
 
