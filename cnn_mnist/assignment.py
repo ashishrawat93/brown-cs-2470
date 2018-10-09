@@ -73,15 +73,15 @@ class Model:
         fc_1 = tf.reshape(l2, shape=[-1, fc_dim])
 
 
-        W_fc_1_2 =  tf.Variable(tf.truncated_normal([fc_dim, 1000], stddev=0.1))
-        b_fc_1_2 = tf.Variable(tf.truncated_normal([1000], stddev=0.1))
+        W_fc_1_2 =  tf.Variable(tf.truncated_normal([fc_dim, 500], stddev=0.1))
+        b_fc_1_2 = tf.Variable(tf.truncated_normal([500], stddev=0.1))
 
         logits_1 = tf.add(tf.matmul(fc_1, W_fc_1_2), b_fc_1_2)
 
         activation_1 = tf.nn.relu(logits_1)
 
 
-        W_fc_2_o = tf.Variable(tf.truncated_normal([1000, 10], stddev=0.1))
+        W_fc_2_o = tf.Variable(tf.truncated_normal([500, 10], stddev=0.1))
         b_fc_2_o = tf.Variable(tf.truncated_normal([10], stddev=0.1))
 
         logits_2 = tf.add(tf.matmul(activation_1, W_fc_2_o), b_fc_2_o)
@@ -111,7 +111,7 @@ class Model:
         :return: the optimizer as a tensor
         """
         # TO-DO: Add the optimizer to the computational graph
-        train =  tf.train.AdamOptimizer(learning_rate=0.0002).minimize(self.loss)
+        train =  tf.train.AdamOptimizer(learning_rate=0.0003).minimize(self.loss)
         return train
 
     def accuracy_function(self):
@@ -143,10 +143,10 @@ def main():
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         for batch in range(2000):
-            print("Batch: ", batch)
+            # print("Batch: ", batch)
             train_images, train_labels = data.train.next_batch(batch_size=50)
             sess.run(model.optimize, feed_dict={model.image: train_images, model.label: train_labels})
-            print(sess.run(model.accuracy, feed_dict={model.image: train_images, model.label: train_labels}))
+            # print(sess.run(model.accuracy, feed_dict={model.image: train_images, model.label: train_labels}))
 
         acc = 0
         for _ in range(2000):
