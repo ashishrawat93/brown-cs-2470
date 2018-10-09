@@ -99,7 +99,7 @@ def main():
         for b in range(2000):
             train_images, train_labels = data.train.next_batch(batch_size=100)
             sess.run(train,feed_dict={model.image:train_images, model.label:train_labels})
-
+            print("Batch: ",sess.run(accuracy, feed_dict={model.image:train_images, model.label:train_labels}))
 
         acc = 0
         for _ in range(2000):
