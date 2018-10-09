@@ -1,5 +1,6 @@
 import os
 import tensorflow as tf
+import time
 from tensorflow.examples.tutorials.mnist import input_data
 # Killing optional CPU driver warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -42,7 +43,7 @@ class Model:
         # TO-DO: Build up the computational graph for the forward pass.
         image = tf.reshape(self.image, [-1, 28, 28, 1])
 
-        kernel1 = tf.Variable(tf.truncated_normal([6,6,1, 32], stddev=0.1))
+        kernel1 = tf.Variable(tf.truncated_normal([4,4,1, 32], stddev=0.1))
         bias1 = tf.Variable(tf.truncated_normal([32], stddev=0.1))
 
         l1 = tf.nn.conv2d(image, filter=kernel1, strides=[1,1,1,1], padding="SAME") + bias1
@@ -51,22 +52,23 @@ class Model:
         pool = tf.nn.max_pool(l1, ksize=[1,2,2,1], strides=[1,1,1,1], padding="SAME")
 
 
-        kernel2 = tf.Variable(tf.truncated_normal([7, 7, 32, 32], stddev=0.1))
-        bias2 = tf.Variable(tf.truncated_normal([32], stddev=0.1))
+        kernel2 = tf.Variable(tf.truncated_normal([4, 4, 32, 64], stddev=0.1))
+        bias2 = tf.Variable(tf.truncated_normal([64], stddev=0.1))
 
         l2 = tf.nn.conv2d(l1, filter=kernel2, strides=[1,2,2,1], padding="SAME") + bias2
         l2 = tf.nn.relu(l2)
 
         l2 = tf.nn.max_pool(l2, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
-
+        # #
         # dimension = l2.get_shape()
         # dim = dimension[1]*dimension[2]*dimension[3]
-        # 3200
+        # # 3200
         # print(dimension, dim)
-        # print(tf.shape(l2))
+        # # print(tf.shape(l2))
         # exit(0)
-        fc_dim = 1568
+        # fc_dim = 1568
+        fc_dim = 3136
 
         fc_1 = tf.reshape(l2, shape=[-1, fc_dim])
 
@@ -109,7 +111,7 @@ class Model:
         :return: the optimizer as a tensor
         """
         # TO-DO: Add the optimizer to the computational graph
-        train =  tf.train.AdamOptimizer(learning_rate=0.0005).minimize(self.loss)
+        train =  tf.train.AdamOptimizer(learning_rate=0.0002).minimize(self.loss)
         return train
 
     def accuracy_function(self):
@@ -136,7 +138,7 @@ def main():
     # TO-DO: initialize model and tensorflow variables
     model = Model(image, label)
     # train = model.optim
-
+    start_time = time.time()
     # TO-DO: Set-up the training step, for 2000 batches with a batch size of 50
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
@@ -153,6 +155,8 @@ def main():
             acc += sess.run(model.accuracy, feed_dict={model.image: test_images, model.label: test_labels})
 
         print("\nTest Accuracy: ", acc / 2000)
+
+        print("Time taken: ", time.time()-start_time)
 
     # TO-DO: run the model on test data and print the accuracy
 
