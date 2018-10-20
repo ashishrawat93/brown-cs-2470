@@ -15,7 +15,7 @@ The stencil has three main parts:
 
 import tensorflow as tf
 import numpy as np
-import time
+# import time
 
 class TrigramLM:
     def __init__(self, X1, X2, Y, vocab_sz):
@@ -125,7 +125,7 @@ def read(train_file, dev_file):
 
 def main():
 
-    start_t = time.time()
+    # start_t = time.time()
     data_tuple = read('train.txt', 'dev.txt')
     train_data = data_tuple[0]
     dev_data = data_tuple[1]
@@ -157,7 +157,7 @@ def main():
         perp = np.exp(loss)
         print("Perplexity is:", perp)
 
-        print("Time :",time.time()-start_t)
+        # print("Time :",time.time()-start_t)
 
 if __name__ == "__main__":
     main()
