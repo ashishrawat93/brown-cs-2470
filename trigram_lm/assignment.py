@@ -14,6 +14,8 @@ The stencil has three main parts:
 """
 
 import tensorflow as tf
+import numpy as np
+import time
 
 class TrigramLM:
     def __init__(self, X1, X2, Y, vocab_sz):
@@ -50,7 +52,22 @@ class TrigramLM:
         """
 
         # TODO: Compute the logits
-        pass
+        VOCAB_SZ = self.vocab_sz
+        EMBEDDING_SZ = 80
+
+        E = tf.Variable(tf.random_normal([VOCAB_SZ, EMBEDDING_SZ], stddev=0.1))
+        W = tf.Variable(tf.random_normal([EMBEDDING_SZ+EMBEDDING_SZ, VOCAB_SZ], stddev=0.1))
+        b = tf.Variable(tf.random_normal([VOCAB_SZ], stddev=0.1))
+
+        em1 = tf.nn.embedding_lookup(E, self.X1)
+        em2 = tf.nn.embedding_lookup(E, self.X2)
+        embedding = tf.concat([em1,em2], axis = 1)
+
+        logits = tf.add(tf.matmul(embedding, W), b)
+        # prob = tf.nn.softmax(logits)
+        return logits
+
+
 
     def loss(self):
         """
@@ -59,7 +76,10 @@ class TrigramLM:
         """
 
         # TODO: Perform the loss computation
-        pass
+        loss = tf.losses.sparse_softmax_cross_entropy(logits=self.logits, labels=self.Y)
+
+        # loss = tf.losses.softmax_cross_entropy(self.label, self.Y)
+        return loss
 
     def optimizer(self):
         """
@@ -67,7 +87,8 @@ class TrigramLM:
         """
 
         # TODO: Execute the training operation
-        pass
+        train_op = tf.train.AdamOptimizer(learning_rate=0.0001).minimize(self.loss)
+        return train_op
 
 def read(train_file, dev_file):
     """
@@ -76,21 +97,67 @@ def read(train_file, dev_file):
     :param test_file: Path to the test file.
     """
 
-    # TODO: Read and process text data given paths to train and development data files
-    pass 
+
+    train_data = []
+    dev_data = []
+    with open(train_file, 'r') as f:
+        sentences = f.read().split('.\n')
+
+    vocab = set(" ".join(sentences).split())
+    word2id = {w: i for i, w in enumerate(list(vocab))}
+
+    s = map(lambda x: x.split(), sentences)
+
+    for each in s:
+        for i in range(0, len(each)-2):
+            train_data.append([word2id[each[i]], word2id[each[i+1]], word2id[each[i+2]]])
+    train_data = np.array(train_data)
+
+    with open(dev_file, 'r') as f:
+        sentences = f.read().split('.\n')
+    s = map(lambda x: x.split(), sentences)
+    for each in s:
+        for i in range(0, len(each) - 2):
+            dev_data.append([word2id[each[i]], word2id[each[i + 1]], word2id[each[i + 2]]])
+    dev_data = np.array(dev_data)
+
+    return (train_data, dev_data, word2id)
 
 def main():
 
-    # TODO: Import and process data
+    start_t = time.time()
+    data_tuple = read('train.txt', 'dev.txt')
+    train_data = data_tuple[0]
+    dev_data = data_tuple[1]
+    word2id = data_tuple[2]
 
-    # TODO: Set up placeholders for inputs and outputs to pass into model's constructor
+    size = len(word2id)
 
-    # TODO: Initialize model and tensorflow variables
+    X = tf.placeholder(tf.int32, shape=[None])
+    Y = tf.placeholder(tf.int32, shape=[None])
+    Z = tf.placeholder(tf.int32, shape=[None])
 
-    # TODO: Set up the training step, training with 1 epoch and with a batch size of 20
+    model = TrigramLM(X, Y, Z, size)
+    loss = model.loss
+    train = model.train_op
+    curr_loss, step = 0,0
 
-    # TODO: Run the model on the development set and print the final perplexity
-    # Remember that perplexity is just defined as: e^(average_loss_per_input)!
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
+
+        for start, end in zip(range(0, len(train_data) - 20, 20), range(20, len(train_data), 20)):
+            l, _ = sess.run( [loss,train],feed_dict={X: train_data[start:end, 0], Y: train_data[start:end, 1], Z: train_data[start:end, 2]})
+            # print(curr_loss, step)
+            curr_loss, step = curr_loss + l, step + 1
+
+        devlen = len(dev_data)
+        loss = sess.run([loss],feed_dict={X:dev_data[0:devlen,0], Y:dev_data[0:devlen,1], Z:dev_data[0:devlen,2]})
+        # print(loss)
+        loss = loss[0]
+        perp = np.exp(loss)
+        print("Perplexity is:", perp)
+
+        print("Time :",time.time()-start_t)
 
 if __name__ == "__main__":
     main()
