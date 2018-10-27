@@ -99,23 +99,30 @@ def read(train_file, dev_file):
 
 
     train_data = []
+    train_labels = []
     dev_data = []
+    dev_labels = []
     with open(train_file, 'r') as f:
-        sentences = f.read().split('.\n')
+        sentences = f.read().split()
 
-    vocab = set(" ".join(sentences).split())
+    vocab = set(sentences)
     word2id = {w: i for i, w in enumerate(list(vocab))}
 
-    s = map(lambda x: x.split(), sentences)
 
-    for each in s:
-        for i in range(0, len(each)-2):
-            train_data.append([word2id[each[i]], word2id[each[i+1]], word2id[each[i+2]]])
+
+    for each in sentences:
+        train_data.append(word2id[each])
+        train_labels.append(word2id[each])
+
+    train_data = train_data[:-1]
+    train_labels = train_labels[1:]
     train_data = np.array(train_data)
+    train_labels = np.array(train_labels)
 
     with open(dev_file, 'r') as f:
-        sentences = f.read().split('.\n')
+        sentences = f.read().split()
     s = map(lambda x: x.split(), sentences)
+
     for each in s:
         for i in range(0, len(each) - 2):
             dev_data.append([word2id[each[i]], word2id[each[i + 1]], word2id[each[i + 2]]])

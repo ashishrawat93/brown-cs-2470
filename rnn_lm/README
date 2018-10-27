@@ -1,1 +1,11 @@
-Fill me in with details of your implementation, any known bugs, etc.
+No bugs or known errors.
+
+Perplexity ~ 200
+
+Embedding size was chosen to be 65 as the vocabulary size was not too large.
+
+RNN Size was chosen to be 300, as this allows us to compensate for the small embedding size that we chose above.
+
+Dropout Regularization was used with a keep_prob of 0.7, as the RNN Size is somewhat large, this was required to prevent overfitting.
+
+
