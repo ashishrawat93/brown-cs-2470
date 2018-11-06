@@ -1,4 +1,36 @@
-- What would you need to change in your model to make it a Vanilla Network?
+
+No bugs or known errors.
+
+Hyperparameters
+---------------
+
+Perplexity ~ 16
+
+Embedding size was chosen to be 100 as the vocabulary size was not too large.
+
+RNN Size was chosen to be 100, as this allows us to compensate for the small embedding size that we chose above.
+
+Dropout Regularization was used with a keep_prob of 0.7, as the RNN Size is somewhat large, this was required to prevent overfitting.
+
+The model takes under 25 minutes to train.
 
 
-- Provide details of your implementation, any known bugs, etc.
+
+Changes for Vanilla RNN
+-----------------------
+
+If we remove the attention layer from both the encoder and decoder, the network ends up being a vanilla network.
+
+I would remove the following in forward pass:
+	'encoder'
+	attn = tf.Variable(tf.random_normal([FRENCH_WINDOW_SIZE, ENGLISH_WINDOW_SIZE], stddev=0.1))
+	enc_out_a = tf.tensordot(enc_out, attn, [[1], [0]])
+	
+	'decoder'
+	attn_d = tf.transpose(enc_out_a,[0,2,1])
+        emb = tf.concat([emb, attn_d],2)
+
+and pass the output encOut of call to dynamic_rnn of encoder to the dynamic_rnn call of the decoder as embedding.
+Reason -  The attention weights and bias allow the rnn to give emphasis and importnce to certain parts of a sentence,
+so removing these attention weights would make the RNN consider all parts of a sentence as equal, hence giving us a vanilla
+RNN that does not put emphasis on important parts of a sentence.

@@ -451,6 +451,8 @@ def main():
 
         total_loss = 0
         denom = 0
+        total_correct_count = 0
+        total_word_count = 0
         # print("in test")
         ash = 0
         d = 0
@@ -466,15 +468,29 @@ def main():
                                         })
 
 
-
+            # y == logits
             l = loss * (sum(english_encoded_lengths_t[idx]))
+            y = np.argmax(y, axis = 2)
             total_loss+=l
+            total_words_per_batch = 0
+            total_correct_batch = 0
+            for p in range(BATCH_SIZE):
+                for q in range(ENGLISH_WINDOW_SIZE):
+                    total_words_per_batch += 1
+                    # print(y[p][q], "\n", english_decoded_labels_t[idx][p][q])
+                    if(y[p][q] == english_decoded_labels_t[idx][p][q]):
+                        total_correct_batch += 1
+            total_correct_count += total_correct_batch
+            total_word_count += total_words_per_batch
+
 
             denom += sum(english_encoded_lengths_t[idx])
 
         loss = total_loss/denom
         perplexity = np.exp(loss)
         print("perplexity is :", perplexity)
+        # accuracy = total_correct_count/total_word_count
+        # print("Accuracy is: ", accuracy)
 
 
 
